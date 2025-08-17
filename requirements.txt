@@ -1,0 +1,8 @@
+Django==3.2.10
+python-dotenv==0.19.2
+awesome-slugify==1.6.5
+better-profanity==0.7.0
+Pillow==9.0.0
+Markdown==3.3.6
+requests==2.26.0
+matplotlib==3.5.1
