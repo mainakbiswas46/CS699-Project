@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %} Profile {% endblock title %}
+{% block body %}
+
+<div class="container rounded bg-white mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-3 border-right">
+            <div class="d-flex flex-column align-items-center text-center p-3 py-5">
+                
+                {% if profile.profile_pic %}
+                <img src="{{ profile.profile_pic.url }}" class="rounded-circle mt-5" width="150px">
+                {% else %}
+                <img class="rounded-circle mt-5"
+                    width="150px"
+                    src="https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg"/>
+                {% endif %} 
+                <br>   
+                <span
+                    class="font-weight-bold">{{profile.fname}} {{profile.lname}}</span><span
+                    class="text-muted">@{{user.username}}</span><span
+                    class="text-black-50">{{profile.email}}</span><span> </span>
+                </div>
+                
+        </div>
+        <div class="col-md-5 border-right">
+            <div class="p-3 py-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="text-right">Basic Details</h4>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-6"><label class="labels">Name</label><input type="text" class="form-control"
+                            placeholder="{{profile.fname}}" value="" readonly></div>
+                    <div class="col-md-6"><label class="labels">Surname</label><input type="text" class="form-control"
+                            value="" placeholder="{{profile.lname}}" readonly></div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12 "><label class="labels">Username</label><input type="text"
+                            class="form-control" placeholder="@{{user.username}}" value="" readonly></div>
+                    <div class="col-md-12"><label class="labels">Mobile Number</label><input type="text"
+                            class="form-control" placeholder="{{profile.phone_number}}" value="" readonly></div>
+                    <div class="col-md-12"><label class="labels">Email ID</label><input type="text" class="form-control"
+                            placeholder="{{profile.email}}" value="" readonly></div>
+                </div>
+
+                <div class="overflow-auto my-5">
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <h4 class="text-right">Asked Questions: ({{ questions|length }})</h4>
+                            <ol>
+                                {% for question in questions %}
+                                <li>
+                                    <a class="text-decoration-none text-blue"
+                                        href="/question/{{question.slug}}">{{question.title}}
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ol>
+                        </div>
+                        <div class="col-md-6">
+                            <h4 class="text-right">Answers: ({{ answers|length }})</h4>
+                            <ol>
+                                {% for reply_question in reply_questions %}
+                                <li>
+                                    Question : <a class="text-decoration-none text-blue"
+                                        href="/question/{{reply_question.slug}}">{{reply_question.title}}
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 py-5">
+                                <!-- Default switch --> 
+               <div class="form-check form-switch">             
+                <div style="float: left">
+                    <strong>Safe Mode</strong>
+                </div>
+                {% if profile.safe_mode %}
+                <form method="POST" action="/change_safe_mode" id="safe_mode_form1" style="float: right">
+                    {% csrf_token %}
+                <input class="form-check-input" type="checkbox" id="safe_mode1" name="safe_mode" onclick="safe_mode_func1(event)" checked> 
+                </form>
+
+                {% else %}
+                <form method="POST" action="/change_safe_mode" id="safe_mode_form2" style="float: right">
+                    {% csrf_token %}
+                <input class="form-check-input" type="checkbox" id="safe_mode2" name="safe_mode" onclick="safe_mode_func2(event)"> 
+                </form>
+                {% endif %}
+            </div> 
+            <br>
+            <form method="POST" action="/edit_profile">
+                {% csrf_token %}
+                <div class="d-flex justify-content-between align-items-center experience">
+                    <span>Edit Educational Details</span>
+                    <button class="btn btn-outline-dark btn-sm my-3" type="submit"><i class="fa fa-plus"></i>&nbsp;Save Profile</button>
+                    {% comment %} <span class="border px-3 p-1 add-experience">
+                        <i class="fa fa-plus"></i>&nbsp;Edit</span> {% endcomment %}
+                </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6"><label class="labels">Branch</label>
+                            <select class="form-control text-muted" style="color: grey;" name="branch">
+                                <option value="{{profile.branch}}" hidden>{{profile.branch}}</option>
+                                <option value="CSE">CSE</option>
+                                <option value="ECE">ECE</option>
+                                <option value="EE">EE</option>
+                                <option value="ME">ME</option>
+                                <option value="CE">CE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6"><label class="labels">Year</label>
+                            <input type="number" name="year" id="year" class="form-control"
+                                placeholder="{{profile.year}}" min="1990" max="2030" maxlength="4" minlength="4">
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <label class="labels">College Name</label>
+                            <input type="text" name="college_name" id="college_name" class="form-control"
+                                   placeholder="{{ profile.college_name }}" maxlength="100">
+                        </div>
+                    </div>
+                </form>
+
+                <br>
+                <form method="POST" action="/change_password">
+                    {% csrf_token %}
+                <div class="d-flex justify-content-between align-items-center experience">
+                    <span>Change Password</span>
+                        <button class="btn btn-outline-dark btn-sm my-3" type="submit"><i class="fa fa-key"></i>&nbsp;Change</button>
+                </div>
+                
+                    <div class="row mt-2">
+                        <div class="col-md-6"><label class="labels">New Password</label>
+                            <input type="password" name="new_password" id="new_password" class="form-control" placeholder="" minlength="5" required>
+                        </div>
+                        <div class="col-md-6"><label class="labels">Confirm Password</label>
+                            <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="" minlength="5" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-2">
+                        <div class="col-md-6"><label class="labels">Old Password</label>
+                            <input type="password" name="old_password" id="old_password" class="form-control" placeholder="" minlength="5" required>
+                        </div>
+                    </div> 
+                    
+                </form>
+
+                <form method="POST" action="/change_profile_pic" enctype="multipart/form-data">
+                    {% csrf_token %}
+                <div class="d-flex justify-content-between align-items-center experience">
+                    <span>Change Profile Picture</span>
+                        <button class="btn btn-outline-dark btn-sm my-3" type="submit"><i class="fa fa-image"></i>&nbsp;Change</button>
+                </div>
+              
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="labels">Upload Profile Picture</label>
+                                <input type="file" name="profile_pic" id="profile_pic" class="form-control" accept="image/png, image/jpeg, image/jpg" required capture>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+{% endblock body %}

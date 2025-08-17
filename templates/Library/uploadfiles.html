@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block Libraryactive %} active {% endblock Libraryactive %}
+{% block title %} Upload Notes/Book {% endblock title %}
+{% block body %}
+
+<div class="container h-100">
+  {% if user.is_anonymous %}
+    <p>Please <a href="/login">Login</a> to Upload</p>
+  {% else %}
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col-lg-12 col-xl-11">
+        <div class="card-body p-md-5">
+          <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
+
+              <p class="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">Upload Notes/Book</p>
+
+              {% if messages %}
+                {% for message in messages %}
+                  <div class="alert alert-warning">
+                    {{ message }}
+                  </div>
+                {% endfor %}
+              {% endif %}
+
+              <form class="mx-1 mx-md-4" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="form-outline mb-4">
+                  <label for="title" class="form-label">Title</label>
+                  <input type="text" name="title" id="title" class="form-control" placeholder="Book/Note Title" required>
+                </div>
+
+                <div class="form-outline mb-4">
+                  <label for="author" class="form-label">Author/Professor</label>
+                  <input type="text" name="author" id="author" class="form-control" placeholder="Book Author/Professor" required>
+                </div>
+
+                <div class="form-outline mb-4">
+                  <label for="ISBN" class="form-label">ISBN</label>
+                  <input type="number" name="ISBN" id="ISBN" class="form-control" placeholder="ISBN (Enter only if it's a book)">
+                </div>
+                
+                <div class="form-outline mb-4">
+                  <label for="isBook" class="form-label">
+                    <input type="checkbox" name="isBook" id="isBook">
+                    Is this a Book?
+                  </label>
+                </div>
+
+                <div class="form-outline mb-4">
+                  <label for="bookfile" class="form-label">Upload File</label>
+                  <input type="file" name="bookfile" id="bookfile" class="form-control-file" required>
+                </div>
+
+                <div class="d-flex justify-content-center mb-3">
+                  <button type="submit" class="btn btn-outline-success btn-lg" style="border-radius: 25px;">Submit</button>
+                </div>
+
+              </form>
+
+            </div>
+            <div class="col-md-10 col-lg-6 col-xl-7 d-flex align-items-center order-1 order-lg-2">
+              <img src="/static/img/books.jpg" class="img-fluid" alt="Upload Book Image" style="max-width: 80%; height: auto;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endblock body %}
+</div>

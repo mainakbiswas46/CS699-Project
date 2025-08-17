@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %} Profile {% endblock title %}
+{% block body %}
+{% load static %} 
+<div class="container rounded bg-white mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-3 border-right">
+            <div class="d-flex flex-column align-items-center text-center p-3 py-5">
+                {% if profile.profile_pic %}
+                <img src="{{ profile.profile_pic.url }}" class="rounded-circle mt-5" width="150px">
+                {% else %}
+                <img class="rounded-circle mt-5"
+                    width="150px"
+                    src="https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg"/>
+                {% endif %}
+                    {% if user.is_active %}
+                        <span class="text-success">Active</span>
+                    {% else %}
+                        <span class="text-danger">Inactive</span>
+                    {% endif %}
+                    <span class="font-weight-bold">{{profile.fname}} {{profile.lname}}</span>
+                    <span class="text-muted">@{{user.username}}</span>
+            </div>
+        </div>
+        <div class="col-md-5 border-right">
+            <div class="p-3 py-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="text-right">Basic Details</h4>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-6"><label class="labels">Name</label>
+                        <a class="form-control">{{profile.fname}}</a>
+                    </div>
+                    <div class="col-md-6"><label class="labels">Surname</label>
+                        <a class="form-control">{{profile.lname}}</a>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12 "><label class="labels">Username</label>
+                        <a class="form-control">{{user.username}}</a>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-6"><label class="labels">Branch</label>
+                        <a class="form-control">{{profile.branch}}</a>
+                    </div>
+                    <div class="col-md-6"><label class="labels">Year</label>
+                        <a class="form-control">{{profile.year}}</a>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <label class="labels">College Name</label>
+                        <a class="form-control">{{ profile.college_name }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="p-3 py-5">
+                <h4 class="text-right">Asked Questions: ({{ questions|length }})</h4>
+                <ol>
+                    {% for question in questions %}
+                    <li>
+                        <a class="text-decoration-none text-blue" href="/question/{{question.slug}}">{{question.title}}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ol>
+                <h4 class="text-right">Answers: ({{ answers|length }})</h4>
+                <ol>
+                    {% for reply_question in reply_questions %}
+                    <li>
+                        Question : <a class="text-decoration-none text-blue"
+                            href="/question/{{reply_question.slug}}">{{reply_question.title}}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+{% endblock body %}

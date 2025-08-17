@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %} Success {% endblock title %}
+{% block body %}
+  <!-- Main Content -->
+  <div class="global-container">
+    <div class="card login-form">
+      <div class="card-body">
+        <h3 class="card-title text-center">Your account is now verified.</h3>
+        <div class="card-text text-center">
+          <!--
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">Incorrect username or password.</div> -->
+          Please login.
+        </div>
+        <div class="text-center">
+          <a class="btn btn-primary" href="{% url 'login' %}">Login</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock body %}

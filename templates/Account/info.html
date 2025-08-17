@@ -1,0 +1,44 @@
+{% extends "base.html" %} 
+{% block title %} GATE Support Platform {% endblock title %} 
+
+{% block body %}
+<!-- Main Heading -->
+<h2><strong>Welcome to Gurukul</strong></h2>
+
+<!-- Project Introduction -->
+<p>
+  This platform was created as part of our Software Lab Project with the aim of supporting GATE aspirants during their preparation journey.
+  Our goal is to provide a space for students to share their question-answer sets, upload solutions with markdown support (so your algorithm's pseudocode doesn't look messy), and keep motivated through a profanity filter, ensuring that no negative language hinders your focus.
+</p>
+
+<!-- Motivational Statement -->
+<p>
+  We understand how challenging GATE preparation can be, and we’re here to make it easier by fostering a positive, supportive community.
+</p>
+
+<!-- Branch Distribution Section -->
+<div style="display: flex; align-items: center; justify-content: space-between; margin-top: 30px;">
+  <div style="flex: 1; padding-right: 20px;">
+    <h3><strong>Branch-wise Distribution of Students</strong></h3>
+    <p>This chart shows the percentage distribution of students across various GATE branches currently using the platform.</p>
+    <img src="data:image/png;base64,{{ plot_image }}" alt="Branch Distribution Pie Chart" style="width: 100%; max-width: 500px;">
+  </div>
+
+  <!-- Additional text section beside the chart -->
+  <div style="flex: 1; padding-left: 20px;">
+    <h3><strong>Join Us and Conquer GATE</strong></h3>
+    <p>
+      Whether you're tackling Computer Science, Electrical Engineering, Mechanical Engineering, or any other GATE branch, you’ll find a community here. Share your insights, get help, and stay focused on your preparation without distractions.
+    </p>
+    <p>
+      We are constantly growing, with more students joining us every day. Your journey toward success just got a little bit easier.
+    </p>
+  </div>
+</div>
+
+<!-- Footer -->
+<p>
+  Start sharing, learning, and connecting with your fellow GATE aspirants. Together, we’ll make this journey less stressful and more successful.
+</p>
+
+{% endblock body %}

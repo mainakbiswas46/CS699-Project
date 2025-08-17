@@ -1,0 +1,795 @@
+{% extends "base.html" %}
+{% load static %} 
+{% block title %} Question {% endblock title %} 
+{% block body %}
+<div class="wrap">
+{% load humanize %}
+{% load get_dict %}
+{% load markdown_extras %}
+
+ 
+<div class="container my-3">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="section-title-left">
+      <span style="font-size:31px">{{post.title}}</span>
+      <h2>{{post.title}}</h2>
+      <p class="blog-post-meta text-muted" style="font-size:12px">    
+        {{post.timestamp}} by
+        {% if request.user.username == post.author %}
+        <a href="/profile/?username={{ post.author }}">&nbsp;You</a>
+        {% else %}
+          <a href="/profile/?username={{ post.author }}">@{{ post.author }}</a>
+        {% endif %}
+        {% if post.edited %}
+          <a class="badge alert-white text-muted">(Edited) {{post.edited_timestamp | naturaltime }} </a>
+      {% endif %}
+      </p>
+      </div>    
+    </div>
+<div class="markdown-content">
+  {{ post.content | markdown | safe }}
+</div>
+<sup class="my-2">
+  <a href="/question/filter?subject={{post.subject}}"><span class="badge alert-primary" style="font-size: 11px; vertical-align: top;">{{post.subject}}</span></a>&nbsp;
+{% for tag in post.split_tags %} 
+  <a href="/search/?query={{tag}}"><span class="badge alert-warning" style="font-size: 11px; vertical-align: top;">{{ tag }}</span></a>
+{% endfor %}
+</sup>
+
+</div>
+
+{% comment %} ==================================================== Edit Delete {% endcomment %}
+<hr>
+{% if request.user.username == post.author%}
+<div class="container">
+    <small><span><i class="fa fa-thumbs-up" aria-hidden="true"></i> {{post.total_likes}}</span></small>
+    &nbsp;&nbsp;<small><span><i class="fas fa-thumbs-down"></i> {{post.total_dislikes}}</span></small>
+    &nbsp;&nbsp;<small><span><i class="fa fa-eye" aria-hidden="true"></i> {{post.views}} views</span></small>
+  <a
+    href=""
+    class="btn btn-white btn-sm btn-rounded"
+    data-toggle="modal"
+    data-target="#modalEditQuestion"
+    ><i class="fas fa-edit"></i>&nbsp;Edit</a
+  >
+
+  <div
+    class="modal fade"
+    id="modalEditQuestion"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="myModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header text-center">
+          <h4 class="modal-title w-100 font-weight-bold">Update</h4>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <form
+          action="/question/edit_question"
+          method="POST"
+          role="form"
+          class="question-form"
+        >
+          {% csrf_token %}
+          <div class="modal-body mx-3">
+            <div class="md-form mb-5">
+              <label for="title">Title</label>
+              <input type="text" name="title" class="form-control" id="title" />
+            </div>
+            <div class="md-form mb-4">
+              <label for="subject">Subject</label>
+              <select class="form-control" name="subject" id="subject">
+                <option value="">Select Subject</option>
+                {% for subject in subjects %}
+                <option value="{{subject}}">{{subject}}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="md-form mb-5">
+              <label for="description">Content</label>
+              <textarea
+                class="form-control"
+                name="content"
+                id="content"
+                onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+'\t'+v.substring(e);this.selectionStart=this.selectionEnd=s+1;return false;}"
+                placeholder="# : Headings&#10;* : Italic&#10;** : Bold&#10;> : Blockquote&#10;``` : Code&#10;1. : Ordered List&#10;- : Unordered List&#10;- [x] : Task List&#10;--- : Horizontal Rule&#10;[...](...) : Link&#10;![...](...) : Image&#10;"
+                rows="5"
+              ></textarea>
+            </div>
+            <input type="hidden" name="slug" id="slug" value="{{post.slug}}" />
+          </div>
+          <div class="modal-footer d-flex justify-content-center">
+            <button class="btn btn-success" type="submit">Update</button>
+          </div>
+          <br />
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <a
+    href=""
+    class="btn btn-white btn-sm btn-rounded"
+    data-toggle="modal"
+    data-target="#modaldeleteQuestion"
+    ><i class="fa fa-trash" aria-hidden="true"></i>&nbsp;Delete</a
+  >
+
+  <div
+    class="modal fade"
+    id="modaldeleteQuestion"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="myModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header text-center">
+          <h4 class="modal-title w-100 font-weight-bold">Are you sure ?</h4>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <form
+          action="/question/delete_question"
+          method="POST"
+          role="form"
+          class="question-form"
+        >
+          {% csrf_token %}
+          <input type="hidden" name="slug" id="slug" value="{{post.slug}}" />
+          <div class="modal-footer d-flex justify-content-center">
+            <button class="btn btn-danger" type="submit">Delete</button>
+          </div>
+          <br />
+        </form>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="container">
+    <form action="/question/like_question" method="POST" role="form" style ='float: left; padding: 2px;'>
+      {% csrf_token %}
+      <input type="hidden" name="post_id1" id="post_id1" value="{{post.slug}}" />
+      <button type="submit" class="btn btn-white btn-sm btn-rounded">
+        {% if liked %}
+        <i class="fa fa-thumbs-up" style="color:blue;" aria-hidden="true"></i>&nbsp;{{post.total_likes}}
+        {% else %}
+          <i class="fa fa-thumbs-up" aria-hidden="true"></i>&nbsp;{{post.total_likes}}
+        {% endif %}
+      </button>
+    </form>
+
+    <form action="/question/dislike_question" method="POST" role="form" style ='float: left; padding: 2px;'>
+      {% csrf_token %}
+      <input type="hidden" name="post_id2" id="post_id2" value="{{post.slug}}" />
+      <button type="submit" class="btn btn-white btn-sm btn-rounded">
+        {% if disliked %}
+        <i class="fa fa-thumbs-down" style="color:blue;" aria-hidden="true"></i>&nbsp;{{post.total_dislikes}}
+        {% else %}
+        <i class="fas fa-thumbs-down"></i>&nbsp;{{post.total_dislikes}}
+        {% endif %}
+      </button>
+    </form>
+
+    <div style ='float: left; padding: 5px;'>
+      &nbsp;&nbsp;<small><span ><i class="fa fa-eye" aria-hidden="true"></i> {{post.views}} views</span></small>
+  </div>
+
+  </div>
+  {% endif %}
+  <br>
+  <br>
+  {% comment %} ==================================================== Comments ============================================== {% endcomment %}
+<div class="container">
+  <h5>Answers ({{comments.count}})</h5>
+  {% if user.is_anonymous %}
+  <p>Please <a href="/login">Login</a> to post a Answer</p>
+  {% else %}
+
+  <form action="/question/comment" method="POST">
+    {% csrf_token %}
+    <div class="form-group">
+      {% comment %} <label for="comment">Post Answer</label> {% endcomment %}
+      <textarea
+        rows="3"
+        type="paragraph_text"
+        class="form-control"
+        name="comment"
+        id="comment"
+        aria-describedby="emailHelp"
+        onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+'\t'+v.substring(e);this.selectionStart=this.selectionEnd=s+1;return false;}"
+        placeholder="Your Answer"
+      ></textarea>
+    </div>
+    <input
+      type="hidden"
+      name="parent_serial_no"
+      value="{{comment.serial_no}}"
+    />
+    <input
+      type="hidden"
+      class="form-check-input"
+      name="post_serial_no"
+      id="post_serial_no"
+      value="{{post.serial_no}}"
+    />
+      <button type="submit" class="btn btn-outline-dark btn-sm my-3 pull-right"><i class="fa fa-comments"></i>&nbsp;Add</button>
+    </form>
+  {% for comment in comments %}
+
+  <div class="row my-3 mx-0">
+    <div class="col-md-1">
+      {% if comment.user.profile.profile_pic %}
+          <img src="{{ comment.user.profile.profile_pic.url }}" class="head-ico rounded-circle">
+      {% else %}
+      <img
+        class="head-ico"
+        src="/static/images/user.png"
+      />
+      {% endif %}
+    </div>
+    <div class="markdown-content">
+      <form
+        method="GET"
+        action="/profile"
+        class="form-inline md-form form-sm mt-0 my-2 ms-2rounded pull-right"
+      >
+        <input
+          hidden
+          name="username"
+          id="username"
+          class="form-control-sm ml-3 w-10 border-end-1 border rounded-pill pull-right"
+          type="text"
+          value="{{ comment.user.username }}"
+          aria-label="Search"
+        />
+        {% if request.user.username == comment.user.username %}
+          <b>You</b>
+          &nbsp;<span class="badge alert-primary">{{comment.timestamp | naturaltime }} </span>
+          {% if comment.edited %}
+          <span class="badge alert-white text-muted">(Edited) {{comment.edited_timestamp | naturaltime }} </span>
+          {% endif %}
+        {% else %}
+          <b><a href="/profile/?username={{ comment.user.username }}" class="text-black">{{comment.user.first_name}} {{comment.user.last_name}}</a></b>
+          &nbsp;<span class="badge alert-primary">{{comment.timestamp | naturaltime }} </span>
+          {% if comment.edited %}
+          <span class="badge alert-white text-muted">(Edited) {{comment.edited_timestamp | naturaltime }} </span>
+          {% endif %}
+        {% endif %}
+        <br>
+        <a href="/profile/?username={{ comment.user.username }}" class="text-muted" style="font-size: 13px;">@{{comment.user.username}}</a>
+        &nbsp;
+      </form>
+      <div>{{comment.comment | markdown | safe}}</div>
+
+      <div class="reply mx-0">
+        {% if reply_count|get_dict:comment.serial_no %}
+        <button
+          class="btn btn-sm btn-white"
+          type="button"
+          data-toggle="collapse"
+          data-target="#view_replies_{{comment.serial_no}}"
+          data-parent="#myGroup"
+          aria-expanded="false"
+          aria-controls="view_replies_{{comment.serial_no}}"
+        >
+        <i class="fas fa-eye"></i>&nbsp;View Replies ({{reply_count|get_dict:comment.serial_no}})
+        </button>
+        {% else %}
+        <button
+          class="btn btn-sm btn-white"
+          type="button"
+          data-toggle="collapse"
+          data-target="#view_replies_{{comment.serial_no}}"
+          aria-expanded="false"
+          aria-controls="view_replies_{{comment.serial_no}}"
+          disabled
+        >
+        <i class="fa fa-eye-slash"></i>&nbsp;View Replies ({{reply_count|get_dict:comment.serial_no}})
+        </button>
+        {% endif %}
+        <button
+          class="btn btn-sm btn-white"
+          type="button"
+          data-toggle="collapse"
+          data-target="#replyBox_{{comment.serial_no}}"
+          aria-expanded="false"
+          aria-controls="replyBox_{{comment.serial_no}}"
+        >
+        <i class="fa fa-reply"></i>&nbsp;Reply
+        </button>
+
+        {% if request.user.username == comment.user.username %}
+
+        <a
+          href=""
+          class="btn btn-white btn-sm btn-rounded"
+          data-toggle="modal"
+          data-target="#modalEditAnswer"><i class="fas fa-edit"></i>&nbsp;Edit</a
+        >
+
+        <div
+          class="modal fade"
+          id="modalEditAnswer"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="myModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header text-center">
+                <h4 class="modal-title w-100 font-weight-bold">Update</h4>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+
+              <form
+                action="/question/edit_answer"
+                method="POST"
+                role="form"
+                class="question-form"
+              >
+                {% csrf_token %}
+                <div class="md-form mb-5">
+                  <label for="description">Content</label>
+                  <textarea
+                    class="form-control"
+                    name="comment"
+                    id="comment"
+                    onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+'\t'+v.substring(e);this.selectionStart=this.selectionEnd=s+1;return false;}"
+                    rows="3"
+                  ></textarea>
+                </div>
+                <input
+                  type="hidden"
+                  name="post_serial_no"
+                  id="post_serial_no"
+                  value="{{comment.post_id}}"
+                />
+                <input
+                  type="hidden"
+                  name="comment_serial_no"
+                  id="comment_serial_no"
+                  value="{{comment.serial_no}}"
+                />
+
+                <div class="modal-footer d-flex justify-content-center">
+                  <button class="btn btn-success" type="submit">Update</button>
+                </div>
+                <br />
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <a
+          href=""
+          class="btn btn-white btn-sm btn-rounded"
+          data-toggle="modal"
+          data-target="#modaldeleteAnswer"
+          ><i class="fa fa-trash" aria-hidden="true"></i>&nbsp;Delete</a
+        >
+
+        <div
+          class="modal fade"
+          id="modaldeleteAnswer"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="myModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header text-center">
+                <h4 class="modal-title w-100 font-weight-bold">
+                  Are you sure ?
+                </h4>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+
+              <form
+                action="/question/delete_answer"
+                method="POST"
+                role="form"
+                class="question-form"
+              >
+                {% csrf_token %}
+                <input
+                  type="hidden"
+                  name="post_serial_no"
+                  id="post_serial_no"
+                  value="{{comment.post_id}}"
+                />
+                <input
+                  type="hidden"
+                  name="comment_serial_no"
+                  id="comment_serial_no"
+                  value="{{comment.serial_no}}"
+                />
+                <div class="modal-footer d-flex justify-content-center">
+                  <button class="btn btn-danger" type="submit">Delete</button>
+                </div>
+                <br />
+              </form>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="collapse" id="replyBox_{{comment.serial_no}}">
+          <div class="card card-body my-2">
+            <form action="/question/comment" method="POST">
+              {% csrf_token %}
+              <div class="form-group">
+                <label for="comment">Post Reply</label>
+                <textarea
+                  rows="3"
+                  type="paragraph_text"
+                  class="form-control"
+                  name="comment"
+                  id="comment"
+                  aria-describedby="emailHelp"
+                  onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+'\t'+v.substring(e);this.selectionStart=this.selectionEnd=s+1;return false;}"
+                  placeholder="Your Reply"
+                ></textarea>
+                <input
+                  type="hidden"
+                  name="parent_serial_no"
+                  value="{{comment.serial_no}}"
+                />
+              </div>
+
+              <input
+                type="hidden"
+                class="form-check-input"
+                name="post_serial_no"
+                id="post_serial_no"
+                value="{{post.serial_no}}"
+              />
+              <button type="submit" class="btn btn-primary my-3">Submit</button>
+            </form>
+          </div>
+        </div>
+
+        <div
+          class="collapse replies my-2"
+          id="view_replies_{{comment.serial_no}}"
+        >
+          {% for reply in reply_Dict|get_dict:comment.serial_no %}
+          <div class="row">
+            <div class="col-md-1">
+              {% if reply.user.profile.profile_pic %}
+                  <img src="{{ reply.user.profile.profile_pic.url }}" class="head-ico rounded-circle">
+              {% else %}
+              <img
+                class="head-ico"
+                src="/static/images/user.png"
+              />
+              {% endif %}
+            </div>
+            <div class="col-md-11">
+              <form
+                method="GET"
+                action="/profile"
+                class="form-inline md-form form-sm mt-0 my-2 rounded pull-right"
+              >
+                <input
+                  hidden
+                  name="username"
+                  id="username"
+                  class="form-control-sm ml-3 w-10 border-end-1 border rounded-pill pull-right"
+                  type="text"
+                  value="{{ reply.user.username }}"
+                  aria-label="Search"
+                />
+                {% if request.user.username == reply.user.username %}
+                  <b>You</b>
+                  &nbsp;<span class="badge alert-primary">{{reply.timestamp | naturaltime }} </span>
+                  {% if reply.edited %}
+                    <span class="badge alert-white text-muted">(Edited) {{reply.edited_timestamp | naturaltime }} </span>
+                  {% endif %}
+                {% else %}
+                  <b><a href="/profile/?username={{ comment.user.username }}" class="text-black">{{reply.user.first_name}} {{reply.user.last_name}}</a></b>
+                  &nbsp;<span class="badge alert-primary">{{reply.timestamp | naturaltime }} </span>
+                  {% if reply.edited %}
+                    <span class="badge alert-white text-muted">(Edited) {{reply.edited_timestamp | naturaltime }} </span>
+                  {% endif %}
+                {% endif %}
+                <br>
+                <a href="/profile/?username={{ reply.user.username }}" class="text-muted" style="font-size: 12px;">@{{reply.user.username}}</a>
+                &nbsp;
+
+                {% comment %} {% if request.user.username == reply.user.username %}
+                  <b>You</b>
+                {% else %}
+                  <b><a href="/profile/?username={{ comment.user.username }}" class="text-black">{{reply.user.first_name}} {{reply.user.last_name}}</a></b>
+                  <a href="/profile/?username={{ reply.user.username }}" class="text-muted" style="font-size: 12px;">@{{reply.user.username}}</a>
+                {% endif %}
+                &nbsp;<span class="badge alert-primary"
+                  >{{reply.timestamp | naturaltime }} </span>
+                  {% if reply.edited %}
+                  <span class="badge alert-white text-muted">(Edited) {{reply.edited_timestamp | naturaltime }} </span>
+                  {% endif %}
+
+                  <br /> {% endcomment %}
+              </form>
+              {{reply.comment | markdown | safe}}
+              </div>
+            
+          </div>
+          {% if request.user.username == reply.user.username %}
+
+          <a
+            href=""
+            class="btn btn-white btn-sm btn-rounded"
+            data-toggle="modal"
+            data-target="#modalEditReply"
+            ><i class="fas fa-edit"></i>&nbsp;Edit</a
+          >
+
+          <div
+            class="modal fade"
+            id="modalEditReply"
+            tabindex="-1"
+            role="dialog"
+            aria-labelledby="myModalLabel"
+            aria-hidden="true"
+          >
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header text-center">
+                  <h4 class="modal-title w-100 font-weight-bold">Update</h4>
+                  <button
+                    type="button"
+                    class="close"
+                    data-dismiss="modal"
+                    aria-label="Close"
+                  >
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+
+                <form
+                  action="/question/edit_reply"
+                  method="POST"
+                  role="form"
+                  class="question-form"
+                >
+                  {% csrf_token %}
+                  <div class="md-form mb-5">
+                    <label for="description">Content</label>
+                    <textarea
+                      class="form-control"
+                      name="reply"
+                      id="reply"
+                      onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+'\t'+v.substring(e);this.selectionStart=this.selectionEnd=s+1;return false;}"
+                      rows="3"
+                    ></textarea>
+                  </div>
+                  <input
+                    type="hidden"
+                    name="slug"
+                    id="slug"
+                    value="{{post.slug}}"
+                  />
+                  <input
+                    type="hidden"
+                    name="comment_serial_no"
+                    id="comment_serial_no"
+                    value="{{reply.serial_no}}"
+                  />
+
+                  <div class="modal-footer d-flex justify-content-center">
+                    <button class="btn btn-success" type="submit">
+                      Update
+                    </button>
+                  </div>
+                  <br />
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <a
+            href=""
+            class="btn btn-white btn-sm btn-rounded"
+            data-toggle="modal"
+            data-target="#modaldeleteReply"
+            ><i class="fa fa-trash" aria-hidden="true"></i>&nbsp;Delete</a
+          >
+
+          <div
+            class="modal fade"
+            id="modaldeleteReply"
+            tabindex="-1"
+            role="dialog"
+            aria-labelledby="myModalLabel"
+            aria-hidden="true"
+          >
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header text-center">
+                  <h4 class="modal-title w-100 font-weight-bold">
+                    Are you sure ?
+                  </h4>
+                  <button
+                    type="button"
+                    class="close"
+                    data-dismiss="modal"
+                    aria-label="Close"
+                  >
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+
+                <form
+                  action="/question/delete_reply"
+                  method="POST"
+                  role="form"
+                  class="question-form"
+                >
+                  {% csrf_token %}
+                  <input
+                    type="hidden"
+                    name="slug"
+                    id="slug"
+                    value="{{post.slug}}"
+                  />
+                  <input
+                    type="hidden"
+                    name="comment_serial_no"
+                    id="comment_serial_no"
+                    value="{{reply.serial_no}}"
+                  />
+                  <div class="modal-footer d-flex justify-content-center">
+                    <button class="btn btn-danger" type="submit">Delete</button>
+                  </div>
+                  <br />
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endif %} {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% endfor %} {% endif %}
+</div>
+
+<div class="sidenav">
+  <section id="contact" class="contact">
+    <div class="section-title">
+      <span>Question</span>
+      <h2>Add Question</h2>
+    </div>
+
+    <div class="row">
+      <div class="question-container">
+        <form
+          action="/question/uploadquestion"
+          method="POST"
+          role="form"
+          class="question-form"
+        >
+          {% csrf_token %}
+          <div class="form-group mt-3 mx-2">
+            <label for="title">Title</label>
+            <input
+              type="text"
+              name="title"
+              class="form-control"
+              id="title"
+              placeholder="Enter Title of Question"
+              required
+            />
+          </div>
+          <div class="form-group mt-3 mx-2">
+            <label for="subject">Subject</label>
+            <select class="form-control" name="subject" id="subject" required>
+              <option value="">Select Subject</option>
+              {% for subject in subjects %}
+              <option value="{{subject}}">{{subject}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group mt-3 mx-2">
+            <label for="question">Tags</label>
+            <input type="text" name="tags" class="form-control" id="tags" maxlength="35" placeholder="Enter tags separated by comma"/>
+          </div>
+          <div class="form-group mt-3 mx-2">
+            <label for="description">Content</label>
+            <textarea
+              class="form-control"
+              name="content"
+              id="content"
+              rows="5"
+              onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+'\t'+v.substring(e);this.selectionStart=this.selectionEnd=s+1;return false;}"
+              placeholder="# : Headings&#10;* : Italic&#10;** : Bold&#10;> : Blockquote&#10;``` : Code&#10;1. : Ordered List&#10;- : Unordered List&#10;- [x] : Task List&#10;--- : Horizontal Rule&#10;[...](...) : Link&#10;![...](...) : Image&#10;"
+              required
+            ></textarea>
+          </div>
+          <div class="text-center">
+            <button type="submit">Post Question</button>
+          </div>
+          <br />
+        </form>
+      </div>
+    </div>
+  </section>
+</div> 
+<div class="sidenavleft">
+  <section id="contact" class="contact">
+    <div class="section-title">
+      <span>More</span>
+      <h2>Topics</h2>
+    </div>
+
+    <div class="row">
+      <div class="question-container">
+        {% for subject in subjects %}
+        <form
+          method="GET"
+          action="/question/filter"
+          class="form-inline md-form form-sm mt-0 mx-4 rounded pull-right"
+        >
+          <input
+            hidden
+            name="subject"
+            id="subject"
+            class="form-control-sm ml-3 w-10 border-end-1 border rounded-pill pull-right"
+            type="text"
+            value="{{ subject }}"
+            aria-label="Search"
+          />
+          <button class="btn btn-rounded btn-sm my-0" type="submit">
+            {{ subject }}
+          </button>
+        </form>
+        {% endfor %}
+        <button class="btn btn-rounded btn-sm btn-outline-primary my-0 mx-4 pull-right" style="border-radius: 16px;" onclick="location.href='/question'">
+          Show All
+        </button>
+      </div>
+    </div>
+  </section>
+</div>
+</div>
+
+{% endblock body %}

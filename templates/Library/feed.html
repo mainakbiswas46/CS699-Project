@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static %}
+{% block Libraryactive %}active{% endblock Libraryactive %}
+{% block title %} Library {% endblock title %}
+{% block body %}
+
+{% if user.is_authenticated %}
+<div class="container my-4">
+  <div class="panel-heading d-flex justify-content-between align-items-center">
+    <h3 class="panel-title">
+      <span class="glyphicon glyphicon-bookmark"></span> Notes/Books
+    </h3>
+    <a href="/library/upload">
+      <button class="btn btn-outline-primary btn-sm">
+        <i class="fa fa-upload"></i>&nbsp;Upload Notes/Books
+      </button>
+    </a>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <!-- Panel with header and button aligned -->
+      <div class="panel panel-default shadow-lg">
+        
+        <!-- Panel Body for Book List -->
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-md-12">
+              <table class="table table-striped table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th>Image</th>
+                    <th>Title</th>
+                    <th>Author/Professor</th>
+                    <th>ISBN</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for book in books %}
+                  <tr class="table-hover">
+                    <td>
+                      {% if book.isBook and book.image_url %}
+                          <img src="{{ book.image_url }}" alt="{{ book.title }}" width="100" height="100" class="rounded shadow-sm"/>
+                      {% elif book.isBook %}
+                          <img src="{% static 'img/nocoverphoto.png' %}" alt="{{ book.title }}" width="100" height="100" class="rounded shadow-sm"/>
+                      {% else %}
+                          <img src="{% static 'img/notes.png' %}" alt="{{ book.title }}" width="100" height="100" class="rounded shadow-sm"/>
+                      {% endif %}
+                    </td>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.author }}</td>
+                    <td>
+                      {% if book.isBook %}
+                        {{ book.ISBN }}
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+                    <td>
+                      <!-- Button to download or view -->
+                      <a href="{{ book.bookfile.url }}" class="btn btn-success btn-sm" download>
+                        <i class="fa fa-download"></i> Download
+                      </a>
+                      <a href="{{ book.bookfile.url }}" target="_blank" class="btn btn-warning btn-sm">
+                        <i class="fa fa-eye"></i> View
+                      </a>
+                      <!-- Display delete button if the current user is the one who uploaded the file -->
+                      {% if book.uploadedby == user %}
+                        <form action="{% url 'delete_upload' book.serial_no %}" method="POST" style="display:inline;">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="fa fa-trash"></i> Delete
+                          </button>
+                        </form>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% else %}
+  <div class="alert alert-info">Please log in to view your uploads.</div>
+{% endif %}
+
+{% endblock body %}

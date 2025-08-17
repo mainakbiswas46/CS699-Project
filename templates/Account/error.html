@@ -1,0 +1,16 @@
+{% extends "base.html" %} 
+{% block title %} Error {% endblock title %} 
+{% block body %}
+
+<div class="global-container">
+  <div class="card login-form">
+    <div class="card-body">
+      <h3 class="card-title text-center">Error</h3>
+      <div class="card-text text-center">Please Try Again.</div>
+      <div class="text-center">
+        <a class="btn btn-primary" href="{% url 'signup' %}">Signup</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock body %}
